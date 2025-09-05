@@ -1,0 +1,25 @@
+# Core dependencies
+ebooklib==0.18
+beautifulsoup4==4.12.3
+lxml==5.1.0
+piper-tts==1.2.0
+
+# Utilities
+python-dotenv==1.0.0
+click==8.1.7
+rich==13.7.0  # For better CLI output
+tqdm==4.66.1  # Progress bars
+
+# Audio processing
+pydub==0.25.1  # For audio format conversion
+soundfile==0.12.1
+
+# Testing
+pytest==7.4.4
+pytest-cov==4.1.0
+pytest-mock==3.12.0
+
+# Code quality
+ruff==0.1.9
+mypy==1.8.0
+black==23.12.1

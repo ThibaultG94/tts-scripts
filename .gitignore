@@ -1,0 +1,64 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+
+# Environment
+.env
+*.env
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Project specific
+output/
+!output/.gitkeep
+samples/*.epub
+samples/*.pdf
+!samples/.gitkeep
+
+# Testing
+.coverage
+.pytest_cache/
+htmlcov/
+.tox/
+*.cover
+.hypothesis/
+
+# Build
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Logs
+*.log
+logs/
+
+# Audio files in dev
+*.wav
+*.mp3
+*.flac
+*.ogg
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+
+# Model cache
+~/.local/share/piper/
+.cache/
