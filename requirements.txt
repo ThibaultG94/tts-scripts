@@ -2,7 +2,9 @@
 ebooklib==0.18
 beautifulsoup4==4.12.3
 lxml==5.1.0
-piper-tts==1.2.0
+
+# TTS - Install Piper separately as it has complex dependencies
+# Run: pip install piper-tts or use the system package
 
 # Utilities
 python-dotenv==1.0.0
@@ -23,3 +25,6 @@ pytest-mock==3.12.0
 ruff==0.1.9
 mypy==1.8.0
 black==23.12.1
+
+# Alternative TTS (if Piper fails)
+edge-tts==6.1.9  # Microsoft Edge TTS as fallback

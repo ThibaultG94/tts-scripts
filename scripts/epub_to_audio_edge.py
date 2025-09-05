@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
-"""Script to convert EPUB files to audio using TTS."""
+"""Script to convert EPUB files to audio using Edge-TTS (Alternative to Piper)."""
 
 import click
 from pathlib import Path
 from rich.console import Console
-from rich.prompt import Confirm
 
 from lib.epub_utils import EPUBProcessor
-from lib.tts_engine import PiperTTS
+from lib.tts_engine_edge import EdgeTTS
 from lib.text_cleaner import TextCleaner
 from config.settings import settings
 
@@ -55,26 +54,37 @@ def split_text_into_chunks(text: str, chunk_size: int) -> list[str]:
 @click.argument('epub_files', nargs=-1, type=click.Path(exists=True), required=True)
 @click.option('--output-dir', '-o', type=click.Path(),
               help='Output directory for audio files')
-@click.option('--model', '-m', type=str, default='fr_FR-upmc-medium',
-              help='TTS model to use (default: fr_FR-upmc-medium)')
-@click.option('--format', '-f', type=click.Choice(['wav', 'mp3']), default='wav',
-              help='Output audio format (default: wav)')
+@click.option('--voice', '-v', type=str, default='henri',
+              help='Voice to use: henri, denise, brigitte, alain, claude, celine (default: henri)')
+@click.option('--format', '-f', type=click.Choice(['wav', 'mp3']), default='mp3',
+              help='Output audio format (default: mp3)')
 @click.option('--speed', '-s', type=float, default=1.0,
               help='Speech speed multiplier (default: 1.0)')
 @click.option('--chunk-size', '-c', type=int, default=5000,
               help='Characters per TTS chunk (default: 5000)')
 @click.option('--combine-chapters', is_flag=True,
               help='Combine all chapters into a single audio file')
+@click.option('--list-voices', is_flag=True,
+              help='List all available voices and exit')
 @click.option('--dry-run', is_flag=True,
               help='Show what would be done without actually converting')
-def epub_to_audio(epub_files, output_dir, model, format, speed, chunk_size, combine_chapters, dry_run):
+def epub_to_audio_edge(epub_files, output_dir, voice, format, speed, chunk_size, 
+                       combine_chapters, list_voices, dry_run):
     """
-    Convert EPUB file(s) to audio using TTS.
+    Convert EPUB file(s) to audio using Edge-TTS (Microsoft voices).
+    
+    This is an alternative to Piper that works without local installation.
+    It requires internet connection as it uses Microsoft's cloud TTS service.
     
     EPUB_FILES: Path(s) to EPUB file(s) to convert
     """
+    
+    # Handle list voices request
+    if list_voices:
+        EdgeTTS.print_available_voices()
+        return 0
+    
     # Update settings
-    settings.TTS_MODEL = model
     settings.AUDIO_FORMAT = format
     settings.TTS_VOICE_SPEED = speed
     settings.CHUNK_SIZE = chunk_size
@@ -83,8 +93,8 @@ def epub_to_audio(epub_files, output_dir, model, format, speed, chunk_size, comb
     output_path = Path(output_dir) if output_dir else settings.AUDIO_OUTPUT_DIR
     output_path.mkdir(parents=True, exist_ok=True)
     
-    console.print(f"[bold blue]Converting {len(epub_files)} EPUB file(s) to audio[/bold blue]")
-    console.print(f"Model: {model}")
+    console.print(f"[bold blue]Converting {len(epub_files)} EPUB file(s) to audio with Edge-TTS[/bold blue]")
+    console.print(f"Voice: {voice}")
     console.print(f"Format: {format}")
     console.print(f"Speed: {speed}x")
     console.print(f"Output: {output_path}\n")
@@ -95,9 +105,10 @@ def epub_to_audio(epub_files, output_dir, model, format, speed, chunk_size, comb
     # Initialize TTS engine
     if not dry_run:
         try:
-            tts = PiperTTS(model=model)
-        except RuntimeError as e:
-            console.print(f"[red]Failed to initialize TTS: {e}[/red]")
+            tts = EdgeTTS(voice=voice)
+        except Exception as e:
+            console.print(f"[red]Failed to initialize Edge-TTS: {e}[/red]")
+            console.print("[yellow]Note: Edge-TTS requires internet connection[/yellow]")
             return 1
     
     cleaner = TextCleaner()
@@ -189,4 +200,4 @@ def epub_to_audio(epub_files, output_dir, model, format, speed, chunk_size, comb
 
 
 if __name__ == "__main__":
-    epub_to_audio()
+    epub_to_audio_edge()
