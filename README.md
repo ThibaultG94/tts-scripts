@@ -1,204 +1,88 @@
-# TTS Scripts - EPUB to Audio Converter
+# TTS Scripts - Convertisseur EPUB vers Audio
 
-Scripts Python pour découper des fichiers EPUB en chapitres et les convertir en audio avec TTS.
+Convertit des livres EPUB en livres audio avec la synthèse vocale Piper TTS.
 
 ## 🚀 Installation rapide
 
 ```bash
-# Cloner le repo et installer
-git clone <your-repo>
-cd tts-scripts
-make install
+# 1. Installer les dépendances
+chmod +x quickstart.sh
+./quickstart.sh
 
-# Installer les modèles Piper
-make install-piper
+# 2. Installer Piper (binaire)
+chmod +x install_hf_tts.sh
+./install_hf_tts.sh
+
+# 3. Activer l'environnement
+source venv/bin/activate
 ```
 
 ## 📖 Usage
 
-### 1. Découper un EPUB en chapitres
+### Workflow complet
 
 ```bash
-# Activer l'environnement virtuel
-source venv/bin/activate
+# 1. Découper un EPUB en chapitres
+python scripts/split_epub.py "mon_livre.epub"
 
-# Prévisualiser les chapitres
-python scripts/split_epub.py mon_livre.epub --preview
+# 2. Convertir en audio (WAV)
+python scripts/epub_to_audio.py output/split/*.epub --voice upmc
 
-# Découper en fichiers séparés
-python scripts/split_epub.py mon_livre.epub
-
-# Avec options
-python scripts/split_epub.py mon_livre.epub \
-    --output-dir ./chapitres \
-    --min-words 200
+# 3. (Optionnel) Voir les chapitres avant conversion
+python scripts/split_epub.py "mon_livre.epub" --preview
 ```
 
-### 2. Convertir EPUB en audio
+### Scripts disponibles
 
-```bash
-# Convertir un seul fichier
-python scripts/epub_to_audio.py mon_livre.epub
+- `scripts/split_epub.py` : Découpe un EPUB en chapitres
+- `scripts/epub_to_audio.py` : Convertit des EPUB en audio WAV
+- `clean_and_split.sh` : Nettoie et re-découpe un EPUB
 
-# Convertir plusieurs fichiers
-python scripts/epub_to_audio.py chapitre1.epub chapitre2.epub
+## 📁 Structure du projet
 
-# Avec options personnalisées
-python scripts/epub_to_audio.py mon_livre.epub \
-    --model fr_FR-upmc-medium \
-    --format mp3 \
-    --speed 1.2 \
-    --combine-chapters
+```
+tts-scripts/
+├── scripts/          # Scripts principaux
+├── lib/              # Bibliothèques
+│   ├── epub_utils.py     # Manipulation EPUB
+│   ├── text_cleaner.py   # Nettoyage texte
+│   └── piper_tts.py      # Moteur TTS
+├── config/           # Configuration
+├── voices/           # Modèles de voix
+├── output/           # Fichiers générés
+│   ├── split/       # EPUB découpés
+│   └── audio/       # Fichiers audio
+└── samples/         # Fichiers test
+
 ```
 
-### 3. Pipeline complet
+## 🎤 Voix disponibles
 
-```bash
-# 1. Découper le livre
-python scripts/split_epub.py livre.epub
-
-# 2. Convertir tous les chapitres
-python scripts/epub_to_audio.py output/split/*.epub
-```
-
-## 🎯 Commandes Make
-
-```bash
-make help           # Afficher l'aide
-make install        # Installer les dépendances
-make install-piper  # Télécharger les modèles TTS
-make test          # Lancer les tests
-make lint          # Vérifier le code
-make format        # Formater le code
-make clean         # Nettoyer les fichiers générés
-
-# Avec fichier
-make run-split FILE=livre.epub
-make run-audio FILE=livre.epub
-make preview FILE=livre.epub
-```
+- **upmc** : Voix française masculine (recommandée)
+- **siwis** : Voix alternative
+- **tom** : Voix Tom
+- **gilles** : Voix Gilles (rapide)
+- **mls** : Voix MLS
 
 ## ⚙️ Configuration
 
-Créer un fichier `.env` depuis le template :
-
-```bash
-cp .env.example .env
-```
-
-Variables disponibles :
-
-- `TTS_MODEL` : Modèle Piper à utiliser (fr_FR-upmc-medium)
-- `TTS_VOICE_SPEED` : Vitesse de la voix (1.0 = normale)
+Modifiez `.env` pour ajuster :
+- `MIN_CHAPTER_LENGTH` : Mots minimum par chapitre (défaut: 100)
 - `AUDIO_FORMAT` : Format de sortie (wav/mp3)
-- `CHUNK_SIZE` : Taille des blocs de texte pour TTS
-- `MIN_CHAPTER_LENGTH` : Nombre minimum de mots par chapitre
 
-## 📁 Structure des sorties
+## 🐛 Résolution de problèmes
 
-```
-output/
-├── split/          # EPUBs découpés
-│   ├── livre_chapter_001_Introduction.epub
-│   ├── livre_chapter_002_Chapitre1.epub
-│   └── ...
-└── audio/          # Fichiers audio générés
-    ├── livre_chapter_001_Introduction.wav
-    ├── livre_chapter_002_Chapitre1.wav
-    └── ...
-```
+### Chapitres manquants
+Réduisez `MIN_CHAPTER_LENGTH` ou utilisez `--min-words 50`
 
-## 🔊 Modèles TTS disponibles
-
-### Français
-
-- `fr_FR-upmc-medium` : Voix masculine, qualité moyenne (recommandé)
-- `fr_FR-siwis-medium` : Voix alternative
-- `fr_FR-tom-medium` : Voix Tom
-- `fr_FR-gilles-low` : Voix Gilles, qualité basse mais rapide
-
-### Installation d'autres modèles
-
+### Fichiers audio trop gros
+Les WAV sont volumineux (~500MB/heure). Pour réduire :
 ```bash
-# Lister les modèles disponibles
-piper --list-models | grep fr_FR
-
-# Télécharger un modèle
-piper --model fr_FR-tom-medium --download-only
-```
-
-## 🐛 Dépannage
-
-### Piper non trouvé
-
-```bash
-pip install piper-tts
-# ou
-pip install piper-tts[gpu]  # Pour support GPU
-```
-
-### Erreur de modèle
-
-```bash
-# Réinstaller le modèle
-rm -rf ~/.local/share/piper/
-make install-piper
-```
-
-### Mémoire insuffisante
-
-Réduire `CHUNK_SIZE` dans `.env` :
-
-```env
-CHUNK_SIZE=2000  # Au lieu de 5000
-```
-
-## 📝 Exemples de scripts personnalisés
-
-### Convertir un dossier entier
-
-```bash
-#!/bin/bash
-for epub in ~/Books/*.epub; do
-    echo "Processing: $epub"
-    python scripts/split_epub.py "$epub"
-    python scripts/epub_to_audio.py output/split/*.epub \
-        --format mp3 \
-        --speed 1.1
-    # Nettoyer les splits
-    rm output/split/*.epub
+# Convertir en MP3 après coup
+for f in output/audio/*.wav; do
+    ffmpeg -i "$f" -b:a 128k "${f%.wav}.mp3"
 done
 ```
-
-### Conversion batch avec voix différentes
-
-```python
-#!/usr/bin/env python3
-import subprocess
-from pathlib import Path
-
-models = {
-    "narrator": "fr_FR-upmc-medium",
-    "character": "fr_FR-siwis-medium"
-}
-
-for chapter in Path("output/split").glob("*.epub"):
-    model = models["narrator"] if "narration" in chapter.name else models["character"]
-    subprocess.run([
-        "python", "scripts/epub_to_audio.py",
-        str(chapter),
-        "--model", model
-    ])
-```
-
-## 🚧 Roadmap
-
-- [ ] Support multi-threading pour conversion batch
-- [ ] Interface web simple
-- [ ] Support d'autres formats (PDF, DOCX)
-- [ ] Post-processing audio (normalisation, compression)
-- [ ] Détection automatique de la langue
-- [ ] Voix multiples par personnage
 
 ## 📄 Licence
 
